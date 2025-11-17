@@ -1,1 +1,371 @@
-공사 즁
+<html lang="ko"><head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Dongle&amp;display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>ProxySG Sysinfo 분석</title>
+<style>
+  a {
+      text-decoration: none !important;
+    }
+  body { font-family: "Segoe UI", Arial, sans-serif; background: #f5f7fa; margin: 20px; color:#333; }
+  .dongle-regular {
+    font-family: "Dongle", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+   /* 🔹 상단 네비게이션 버튼 */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;  /* 좌측-우측 배치 */
+    gap: 4px;
+    margin-bottom: -10px;
+  }
+  .nav-right {
+      display: flex;
+      gap: 4px;
+    }
+    
+
+  .nav-btn {
+    background: #1e3a5f; color: white; border: none; border-radius: 8px;
+    padding: 4px 8px; height: 12px; line-height: 10px;
+    cursor: pointer; font-weight: 400; font-size: 0.75rem;
+    text-decoration: none; transition: background 0.2s;
+  }
+  .nav-btn-soon {
+    background: #98A1BC; color: #555879; border: none; border-radius: 8px;
+    padding: 4px 8px; height: 12px; line-height: 10px;
+    cursor: pointer; font-weight: 400; font-size: 0.75rem;
+    text-decoration: none; transition: background 0.2s;
+  }
+
+  .nav-btn:hover {
+    background: linear-gradient(135deg, #FF0066, #0046FF);
+  }
+  
+	
+  h1 {
+  	font-size: 1.5em;
+    background: #1e3a5f;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;  /* 좌우 배치 */
+    align-items: flex-end;            /* 아래 정렬 */
+    margin-bottom: 5pt;
+  }
+  .header-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #f3f4f6;  /* 필요시 배경 지정 */
+    transition: all 0.25s ease;
+  }
+
+  .title-left {
+    font-size: 1.6em;                   /* 제목 크게 */
+    line-height: 0.7;                   /* 줄 간격 줄이기 */
+    margin-bottom: 0;                   /* 아래 여백 제거 */
+  }
+
+  .subtitle {
+    font-size: 0.7em;
+    font-weight: normal;
+    color: #bcd0f7;
+    opacity: 0.9;
+    margin-top: 2px;                    /* 제목과의 여백 최소화 */
+    display: block;                     /* 줄바꿈 확실히 적용 */
+  }
+  
+  .date-container {
+    text-align: right;
+    line-height: 1.2;
+  }
+
+  .version {
+    font-size: 24px;
+    color: #bcd0f7; /* 회색-파랑 톤으로 살짝 강조 */
+    opacity: 0.9;     /* 살짝 연하게 */
+  }
+  .date-header {
+    font-size: 20px;
+    color: #fff;
+    margin: 0;
+  }
+  .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; font-size: 13px; }
+  th { background: #f0f2f5; font-weight: bold; }
+  .nok { background-color: #f9d6d6; }  /* 빨간색 배경 */
+  .yellow { background-color: #fff3cd; }  /* 노란색 */
+  .red { background-color: #f8d7da; }     /* 빨간색 */
+  .white { background-color: #f0f2f5; }     /* 기본 흰색 */
+  input[type=file] { margin: 15px 0; }
+  button { background:#1e3a5f; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; margin-top:10px; }
+  button:hover { background:#294b7a; }
+  
+  .button-bar {
+  display: flex;
+  justify-content: space-between;  /* 좌우 끝으로 배치 */
+  align-items: center;
+  margin: -10px 0;
+  }
+
+  #fileInput {
+    flex: 1;
+    max-width: 180px; /* 필요 시 조정 */
+  }
+
+  #downloadBtn {
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  #downloadBtn:hover {
+    background: #294b7a;
+  }
+  
+  .notice {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 150px auto;
+  }
+
+  .notice-box {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e9eef8 0%, #f5f7fb 100%);
+    border: 1.5px solid #b0c4de;
+    border-radius: 20px;
+    padding: 15px 20px;
+    max-width: 680px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+
+  .notice-icon {
+    font-size: 30px;
+    margin-right: 12px;
+    color: #1e3a5f;
+  }
+
+  .notice-text {
+    font-size: 14px;
+    color: #2b2b2b;
+    line-height: 1.6;
+  }
+
+  .notice-text strong {
+    color: #1e3a5f;
+  }
+  
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 6px 40px 10px 40px;
+  }
+
+  /* === 모달 트리거 버튼 === */
+  #openModal {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1001;
+  }
+  
+  #openModal:hover { background: #1e40af; }
+
+  /* === 모달 오버레이 === */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* === 모달 본체 === */
+  .modal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 940px;
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+    animation: fadeIn .3s ease;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 14px;
+    background: transparent;
+    color: #444;
+    font-size: 28px;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  .close-btn:hover { color: #000; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === 기존 Sysinfo curl UI 스타일 (간소화 버전) === */
+  .container {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    margin: 30px;
+    padding: 28px 32px;
+  }
+  
+  h2 {
+    margin: 0 0 18px 0;
+    font-size: 20px;
+    color: #1e3a8a;
+    border-bottom: 2px solid #e0e7ff;
+    padding-bottom: 6px;
+  }
+  
+  label { font-weight: 600; font-size: 13px; color: #374151; display: block; }
+  input[type="text"], input[type="password"], textarea {
+    padding: 9px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    background-color: #fafafa;
+  }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+    background-color: #fff;
+  }
+  
+  .input-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  
+  .w-sm { width: 100px; }
+  .w-md { width: 140px; }
+  textarea { width: 90%; min-height: 80px; resize: vertical; }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 12px;
+    border-radius: 10px;
+    min-height: 120px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    margin-top: 10px;
+  }
+  
+  button {
+    background: #2563eb;
+    border: none;
+    color: #fff;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  button:hover { background: #1e40af; }
+  .actions { margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .note { font-size: 13px; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; padding: 6px 10px; border-radius: 6px; }
+  .badge { background: #e0e7ff; color: #1e3a8a; font-size: 12px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+  
+  /* 🧲 드래그 앤 드롭 영역 스타일 */
+  #dropZone {
+    margin-top: 18px;
+    padding: 10px;
+    border: 2px dashed #1e3a5f;
+    border-radius: 10px;
+    color: #1e3a5f;
+    text-align: center;
+    background: #f8fafc;
+    font-weight: 400;
+    transition: all 0.2s ease;
+  }
+  #dropZone.dragover {
+    background: #e0e7ff;
+    border-color: #2563eb;
+    color: #1e40af;
+  }
+  
+  
+</style>
+</head>
+<body>
+
+<div class="header-wrap">
+    
+	<div class="top-nav">
+        <div class="nav-left">
+            <a href="https://etech-symantec.github.io/" class="home-btn">🪟</a>
+        </div>
+    
+        <div class="nav-right">
+            <a href="https://etech-symantec.github.io/eos" class="nav-btn">⏳ EoS 확인</a>
+            <a href="https://etech-symantec.github.io/sysinfo" class="nav-btn">🧩 Sysinfo 분석</a>
+            <a href="https://etech-symantec.github.io/isg" class="nav-btn">🔎 ISG 분석</a>
+            <a href="https://etech-symantec.github.io/trace" class="nav-btn">📄 Trace 분석</a>
+            <a href="https://etech-symantec.github.io/sizing-sg" class="nav-btn">📊 Sizing-SG 보기</a>
+            <a href="https://etech-symantec.github.io/elk" class="nav-btn">🧬 ELK 로그 설정</a>
+            <a href="https://etech-symantec.github.io/pac" class="nav-btn-soon">🚦 PAC</a>
+        </div>
+    </div>
+
+		
+	<h1 class="dongle-regular">
+	  <div class="title-left">
+	    ProxySG Auto Sysinfo Report<br>
+	    <span class="subtitle">by 이테크시스템</span>
+	  </div>
+	  <div class="date-container">
+	    <div class="version">ver.2025.10.31.01</div><p>
+	  </div>
+	</h1>
+</div>
+
+<!-- ✅ 안내 문구 (스타일 개선 버전) -->
+<div id="notice" class="notice">
+  <div class="notice-box">
+    <span class="notice-icon">🔒</span>
+    <div class="notice-text">
+      공사 중
+    </div>
+  </div>
+</div>
+
+<div id="report"></div>
+</body></html>
